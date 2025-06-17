@@ -98,11 +98,17 @@ vim.g.have_nerd_font = false
 -- NOTE: You can change these options as you wish!
 --  For more options, you can see `:help option-list`
 
+-- Indenting defautls
+vim.o.tabstop = 2
+vim.o.shiftwidth = 2
+vim.o.softtabstop = 2
+vim.o.expandtab = true
+
 -- Make line numbers default
 vim.o.number = true
 -- You can also add relative line numbers, to help with jumping.
 --  Experiment for yourself to see if you like it!
--- vim.o.relativenumber = true
+vim.o.relativenumber = true
 
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.o.mouse = 'a'
@@ -351,6 +357,46 @@ require('lazy').setup({
     },
   },
 
+  -- JS/TS Language Server functionality
+  {
+    'pmizio/typescript-tools.nvim',
+    dependencies = { 'nvim-lua/plenary.nvim', 'neovim/nvim-lspconfig' },
+    config = function()
+      require('typescript-tools').setup {
+        settings = {
+          typescript = {
+            suggest = {
+              autoImports = true,
+            },
+            preferences = {
+              importModuleSpecifier = 'relative',
+              includePackageJsonAutoImports = 'auto',
+            },
+            format = {
+              indentSize = 2,
+              convertTabsToSpaces = true,
+              tabSize = 2,
+            },
+          },
+          javascript = {
+            suggest = {
+              autoImports = true,
+            },
+            preferences = {
+              importModuleSpecifier = 'relative',
+              includePackageJsonAutoImports = 'auto',
+            },
+            format = {
+              indentSize = 2,
+              convertTabsToSpaces = true,
+              tabSize = 2,
+            },
+          },
+        },
+      }
+    end,
+  },
+
   -- NOTE: Plugins can specify dependencies.
   --
   -- The dependencies are proper plugin specifications as well - anything
@@ -412,7 +458,21 @@ require('lazy').setup({
         --     i = { ['<c-enter>'] = 'to_fuzzy_refine' },
         --   },
         -- },
-        -- pickers = {}
+        pickers = {
+          find_files = {
+            find_command = { 'rg', '--files', '--iglob', '!.git', '--hidden' },
+          },
+          live_grep = {
+            additional_args = function()
+          return { '--ignore-case' }
+            end,
+          },
+          grep_string = {
+            additional_args = function()
+          return { '--ignore-case' }
+            end,
+          },
+        },
         extensions = {
           ['ui-select'] = {
             require('telescope.themes').get_dropdown(),
@@ -752,27 +812,27 @@ require('lazy').setup({
     },
     opts = {
       notify_on_error = false,
-      format_on_save = function(bufnr)
-        -- Disable "format_on_save lsp_fallback" for languages that don't
-        -- have a well standardized coding style. You can add additional
-        -- languages here or re-enable it for the disabled ones.
-        local disable_filetypes = { c = true, cpp = true }
-        if disable_filetypes[vim.bo[bufnr].filetype] then
-          return nil
-        else
-          return {
-            timeout_ms = 500,
-            lsp_format = 'fallback',
-          }
-        end
-      end,
+      -- format_on_save = function(bufnr)
+      --   -- Disable "format_on_save lsp_fallback" for languages that don't
+      --   -- have a well standardized coding style. You can add additional
+      --   -- languages here or re-enable it for the disabled ones.
+      --   local disable_filetypes = { c = true, cpp = true, typescript = true, javascript = true }
+      --   if disable_filetypes[vim.bo[bufnr].filetype] then
+      --     return nil
+      --   else
+      --     return {
+      --       timeout_ms = 500,
+      --       lsp_format = 'fallback',
+      --     }
+      --   end
+      -- end,
       formatters_by_ft = {
         lua = { 'stylua' },
         -- Conform can also run multiple formatters sequentially
         -- python = { "isort", "black" },
         --
         -- You can use 'stop_after_first' to run the first available formatter from the list
-        -- javascript = { "prettierd", "prettier", stop_after_first = true },
+        javascript = { 'prettierd', 'prettier', stop_after_first = true },
       },
     },
   },
@@ -894,7 +954,57 @@ require('lazy').setup({
       -- Load the colorscheme here.
       -- Like many other themes, this one has different styles, and you could load
       -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-      vim.cmd.colorscheme 'tokyonight-night'
+    end,
+  },
+
+  -- My colorschemes
+  --
+  -- Catppuccin colorscheme
+  { 'catppuccin/nvim', name = 'catppuccin', priority = 1000 },
+  -- Sonokai with color picker
+  {
+    'sainnhe/sonokai',
+    lazy = false,
+    priority = 1000,
+    config = function()
+      vim.g.sonokai_style = 'atlantis'
+      vim.g.sonokai_enable_italic = true
+      vim.cmd.colorscheme 'sonokai'
+      -- Telescope picker (only if telescope is available)
+      local function sonokai_telescope_picker()
+        local ok, telescope = pcall(require, 'telescope')
+        if not ok then
+          print 'Telescope not available'
+          return
+        end
+        local pickers = require 'telescope.pickers'
+        local finders = require 'telescope.finders'
+        local conf = require('telescope.config').values
+        local actions = require 'telescope.actions'
+        local action_state = require 'telescope.actions.state'
+        local styles = { 'default', 'atlantis', 'andromeda', 'shusia', 'maia', 'espresso' }
+        pickers
+          .new({}, {
+            prompt_title = 'Sonokai Styles',
+            finder = finders.new_table {
+              results = styles,
+            },
+            sorter = conf.generic_sorter {},
+            attach_mappings = function(prompt_bufnr, map)
+              actions.select_default:replace(function()
+                actions.close(prompt_bufnr)
+                local selection = action_state.get_selected_entry()
+                vim.g.sonokai_style = selection[1]
+                vim.cmd.colorscheme 'sonokai'
+              end)
+              return true
+            end,
+          })
+          :find()
+      end
+      vim.api.nvim_create_user_command('Sonokai', sonokai_telescope_picker, {})
+      vim.g.sonokai_style = 'atlantis'
+      vim.cmd.colorscheme 'sonokai'
     end,
   },
 
@@ -1011,6 +1121,18 @@ require('lazy').setup({
     },
   },
 })
+-- User command for switching to light theme
+vim.api.nvim_create_user_command('Light', function()
+  vim.cmd.colorscheme 'catppuccin-latte'
+  vim.opt.background = 'light'
+  print 'Switched to Catppuccin Latte'
+end, {})
+vim.api.nvim_create_user_command('Dark', function()
+  vim.g.sonokai_style = 'atlantis'
+  vim.cmd.colorscheme 'sonokai'
+  vim.opt.background = 'dark'
+  print 'Switched to Sonokai Atlantis'
+end, {})
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
