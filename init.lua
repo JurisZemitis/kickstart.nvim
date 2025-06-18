@@ -91,7 +91,7 @@ vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
-vim.g.have_nerd_font = false
+vim.g.have_nerd_font = true 
 
 -- [[ Setting options ]]
 -- See `:help vim.o`
@@ -453,11 +453,16 @@ require('lazy').setup({
         -- You can put your default mappings / updates / etc. in here
         --  All the info you're looking for is in `:help telescope.setup()`
         --
-        -- defaults = {
-        --   mappings = {
-        --     i = { ['<c-enter>'] = 'to_fuzzy_refine' },
-        --   },
-        -- },
+        defaults = {
+          mappings = {
+            i = {
+              ['<C-w>'] = require('telescope.actions').delete_buffer,
+            },
+            n = {
+              ['<C-w>'] = require('telescope.actions').delete_buffer,
+            },
+          },
+        },
         pickers = {
           find_files = {
             find_command = { 'rg', '--files', '--iglob', '!.git', '--hidden' },
@@ -477,6 +482,7 @@ require('lazy').setup({
           ['ui-select'] = {
             require('telescope.themes').get_dropdown(),
           },
+          fzf = {}
         },
       }
 
@@ -958,9 +964,10 @@ require('lazy').setup({
   },
 
   -- My colorschemes
-  --
   -- Catppuccin colorscheme
   { 'catppuccin/nvim', name = 'catppuccin', priority = 1000 },
+  -- NightFox
+  { "EdenEast/nightfox.nvim" },
   -- Sonokai with color picker
   {
     'sainnhe/sonokai',
