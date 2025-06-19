@@ -99,9 +99,9 @@ vim.g.have_nerd_font = true
 --  For more options, you can see `:help option-list`
 
 -- Indenting defautls
-vim.o.tabstop = 2
-vim.o.shiftwidth = 2
-vim.o.softtabstop = 2
+vim.o.tabstop = 4
+vim.o.shiftwidth = 4
+vim.o.softtabstop = 4
 vim.o.expandtab = true
 
 -- Make line numbers default
@@ -764,6 +764,39 @@ require('lazy').setup({
             },
           },
         },
+
+               -- Add Tailwind CSS Language Server
+        tailwindcss = {
+          filetypes = {
+            'html', 'css', 'scss', 'javascript', 'javascriptreact',
+            'typescript', 'typescriptreact', 'vue', 'svelte'
+          },
+          settings = {
+            tailwindCSS = {
+              classAttributes = { "class", "className", "class:list", "classList", "ngClass" },
+              lint = {
+                cssConflict = "warning",
+                invalidApply = "error",
+                invalidConfigPath = "error",
+                invalidScreen = "error",
+                invalidTailwindDirective = "error",
+                invalidVariant = "error",
+                recommendedVariantOrder = "warning"
+              },
+              validate = true
+            }
+          }
+        },
+
+        -- HTML Language Server (useful for HTML files with Tailwind)
+        html = {
+          filetypes = { 'html', 'htm' }
+        },
+
+        -- CSS Language Server
+        cssls = {
+          filetypes = { 'css', 'scss', 'less' }
+        },
       }
 
       -- Ensure the servers and tools above are installed
@@ -800,6 +833,47 @@ require('lazy').setup({
         },
       }
     end,
+  },
+
+    -- Tailwind CSS IntelliSense
+  {
+    'luckasRanarison/tailwind-tools.nvim',
+    name = "tailwind-tools",
+    build = ":UpdateRemotePlugins",
+    dependencies = {
+      "nvim-treesitter/nvim-treesitter",
+      "nvim-telescope/telescope.nvim", -- optional
+      "neovim/nvim-lspconfig", -- optional
+    },
+    opts = {
+      -- your configuration
+    }
+  },
+
+  -- Colorizer for CSS colors (shows actual colors in your code)
+  {
+    'NvChad/nvim-colorizer.lua',
+    event = 'BufReadPre',
+    opts = {
+      filetypes = {
+        'css',
+        'scss',
+        'html',
+        'javascript',
+        'typescript',
+        'jsx',
+        'tsx',
+        'vue',
+        'svelte',
+      },
+      user_default_options = {
+        tailwind = true, -- Enable tailwind colors
+        css = true,
+        css_header = true,
+        mode = 'background', -- Set the display mode: 'foreground', 'background', 'virtualtext'
+        virtualtext = '■',
+      },
+    },
   },
 
   { -- Autoformat
@@ -839,6 +913,13 @@ require('lazy').setup({
         --
         -- You can use 'stop_after_first' to run the first available formatter from the list
         javascript = { 'prettierd', 'prettier', stop_after_first = true },
+        javascriptreact = { 'prettier' },
+        typescript = { 'prettier' },
+        typescriptreact = { 'prettier' },
+        html = { 'prettier' },
+        css = { 'prettier' },
+        scss = { 'prettier' },
+        json = { 'prettier' },
       },
     },
   },
@@ -1061,7 +1142,7 @@ require('lazy').setup({
     main = 'nvim-treesitter.configs', -- Sets main module to use for opts
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
     opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
+      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc', 'javascript', 'typescript', 'tsx', 'jsx', 'css', 'scss', 'json' },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
